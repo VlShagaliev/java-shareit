@@ -42,7 +42,7 @@ public class UserService {
         }
     }
 
-    private void userStorageHaveId(Long id){
+    private void userStorageHaveId(Long id) {
         if (!userStorage.getUserStorage().containsKey(id)) {
             throw new NotFoundException(String.format("Пользователя с id = %d не существует", id));
         }
