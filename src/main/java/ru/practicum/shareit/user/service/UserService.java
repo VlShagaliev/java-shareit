@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorageImpl;
 
@@ -12,17 +14,17 @@ import ru.practicum.shareit.user.storage.UserStorageImpl;
 public class UserService {
     private final UserStorageImpl userStorage;
 
-    public User addUser(User user) throws ValidationException {
+    public User addUser(UserDto user) throws ValidationException {
         userStorageHaveEmail(user);
         user.setId(userStorage.getUserStorage().size() + 1L);
-        return userStorage.add(user);
+        return userStorage.add(UserMapper.toUser(user));
     }
 
-    public User updateUser(User user, Long id) throws ValidationException {
+    public User updateUser(UserDto user, Long id) throws ValidationException {
         userStorageHaveEmail(user);
         user.setId(id);
         userStorageHaveId(id);
-        return userStorage.update(user);
+        return userStorage.update(UserMapper.toUser(user));
     }
 
     public User getUser(Long id) {
@@ -35,7 +37,7 @@ public class UserService {
         userStorage.delete(id);
     }
 
-    private void userStorageHaveEmail(User user) throws ValidationException {
+    private void userStorageHaveEmail(UserDto user) throws ValidationException {
         if (userStorage.getUserStorage().values().stream()
                 .anyMatch(user1 -> user1.getEmail().equals(user.getEmail()))) {
             throw new ValidationException("Пользователь с данной почтой уже существует");

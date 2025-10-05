@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorageImpl;
 import ru.practicum.shareit.user.service.UserService;
@@ -16,13 +18,13 @@ public class ItemService {
     private final ItemStorageImpl itemStorage;
     private final UserService userService;
 
-    public Item addItem(Item item, Long userId) {
+    public Item addItem(ItemDto item, Long userId) {
         item.setId(itemStorage.getItemStorage().size() + 1L);
         item.setOwner(userService.getUser(userId));
-        return itemStorage.add(item);
+        return itemStorage.add(ItemMapper.toItem(item));
     }
 
-    public Item updateItemByIdItem(Item item, Long itemId, Long userId) {
+    public Item updateItemByIdItem(ItemDto item, Long itemId, Long userId) {
         itemStorageHaveId(itemId);
         item.setId(itemId);
         item.setOwner(userService.getUser(userId));
@@ -35,7 +37,7 @@ public class ItemService {
         if (item.getDescription() == null) {
             item.setDescription(itemStorage.getItemStorage().get(itemId).getDescription());
         }
-        return itemStorage.update(item);
+        return itemStorage.update(ItemMapper.toItem(item));
     }
 
     public Item getItemByItemId(Long itemId) {
