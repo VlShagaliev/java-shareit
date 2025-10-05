@@ -29,6 +29,9 @@ public class ItemService {
         if (item.getName() == null) {
             item.setName(itemStorage.getItemStorage().get(itemId).getName());
         }
+        if (item.getAvailable() == null) {
+            item.setAvailable(itemStorage.getItemStorage().get(itemId).getAvailable());
+        }
         if (item.getDescription() == null) {
             item.setDescription(itemStorage.getItemStorage().get(itemId).getDescription());
         }

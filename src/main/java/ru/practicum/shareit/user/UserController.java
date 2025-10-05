@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -17,18 +19,18 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User newUser(@Valid @RequestBody User user) throws ValidationException {
-        return userService.addUser(user);
+    public UserDto newUser(@Valid @RequestBody User user) throws ValidationException {
+        return UserMapper.toUserDto(userService.addUser(user));
     }
 
     @PatchMapping("/{id}")
-    public User updateUser(@RequestBody User user, @PathVariable Long id) throws ValidationException {
-        return userService.updateUser(user, id);
+    public UserDto updateUser(@RequestBody User user, @PathVariable Long id) throws ValidationException {
+        return UserMapper.toUserDto(userService.updateUser(user, id));
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUser(id);
+    public UserDto getUserById(@PathVariable Long id) {
+        return UserMapper.toUserDto(userService.getUser(id));
     }
 
     @DeleteMapping("/{id}")
