@@ -1,12 +1,51 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.service.BookingService;
+
+import java.util.List;
 
 /**
  * TODO Sprint add-bookings.
  */
 @RestController
-@RequestMapping(path = "/bookings")
+@RequestMapping("/bookings")
+@RequiredArgsConstructor
 public class BookingController {
+
+    private final BookingService bookingService;
+
+    @PostMapping
+    public ResponseEntity<BookingResponseDto> createBooking(@RequestBody BookingDto bookingDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        BookingResponseDto savedBooking = bookingService.createBooking(bookingDto, userId);
+        return ResponseEntity.ok(savedBooking);
+    }
+
+    @PatchMapping("/{bookingId}")
+    public ResponseEntity<BookingResponseDto> approveBooking(@PathVariable Long bookingId, @RequestParam(value = "approved") Boolean approved, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        BookingResponseDto approvedBooking = bookingService.approveBooking(bookingId, approved, userId);
+        return ResponseEntity.ok(approvedBooking);
+    }
+
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<BookingResponseDto> getBookerBookings(@PathVariable Long bookingId) {
+        BookingResponseDto bookings = bookingService.getBookingById(bookingId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/owner")
+    public ResponseEntity<List<BookingResponseDto>> getOwnerBookings(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BookingResponseDto>> getAllUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        List<BookingResponseDto> bookings = bookingService.getAllUserBookings(userId);
+        return ResponseEntity.ok(bookings);
+    }
 }
