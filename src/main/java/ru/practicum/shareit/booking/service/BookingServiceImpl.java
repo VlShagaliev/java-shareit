@@ -16,6 +16,8 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -64,20 +66,50 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getOwnerBookings(Long userId) {
+    public List<BookingResponseDto> getOwnerBookings(Long userId, String stateParam) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        return bookingRepository.findAllByBookerId(userId).stream()
-                .map(BookingMapper::toBookingResponseDto)
+
+        List<Booking> bookings = bookingRepository.findAll().stream()
+                .filter(booking -> booking.getItem().getOwner().getId().equals(userId))
                 .toList();
+        bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+        return filteredByStateParam(bookings, stateParam);
     }
 
     @Override
-    public List<BookingResponseDto> getAllUserBookings(Long userId) {
-        return bookingRepository.findAllByBookerId(userId).stream()
-                .map(BookingMapper::toBookingResponseDto)
+    public List<BookingResponseDto> getAllUserBookings(Long userId, String stateParam) {
+        List<Booking> bookings = bookingRepository.findAllByBookerId(userId).stream()
                 .toList();
+        return filteredByStateParam(bookings, stateParam);
     }
 
-    // Остальные методы реализуем аналогично
+    private List<BookingResponseDto> filteredByStateParam(List<Booking> bookings, String stateParam) {
+        LocalDateTime now = LocalDateTime.now();
+        return switch (stateParam) {
+            case "CURRENT" -> bookings.stream()
+                    .filter(booking -> booking.getStart().isBefore(now) && booking.getEnd().isAfter(now))
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+            case "PAST" -> bookings.stream()
+                    .filter(booking -> booking.getEnd().isBefore(now))
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+            case "FUTURE" -> bookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(now))
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+            case "WAITING" -> bookings.stream()
+                    .filter(booking -> booking.getStatus().equals(Status.WAITING) && booking.getStart().isAfter(now))
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+            case "REJECTED" -> bookings.stream()
+                    .filter(booking -> booking.getStatus().equals(Status.REJECTED))
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+            default -> bookings.stream()
+                    .map(BookingMapper::toBookingResponseDto)
+                    .toList();
+        };
+    }
 }
