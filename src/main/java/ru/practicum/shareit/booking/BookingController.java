@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import java.util.List;
@@ -39,13 +40,15 @@ public class BookingController {
 
     @GetMapping("/owner")
     public ResponseEntity<List<BookingResponseDto>> getOwnerBookings(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(name = "state", defaultValue = "all") String stateParam) {
-        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(userId, stateParam);
+        BookingState state = BookingState.fromString(stateParam).orElseThrow(() -> new IllegalArgumentException("Неизвестный параметр state: " + stateParam));
+        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(userId, state);
         return ResponseEntity.ok(bookings);
     }
 
     @GetMapping
     public ResponseEntity<List<BookingResponseDto>> getAllUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(name = "state", defaultValue = "all") String stateParam) {
-        List<BookingResponseDto> bookings = bookingService.getAllUserBookings(userId, stateParam);
+        BookingState state = BookingState.fromString(stateParam).orElseThrow(() -> new IllegalArgumentException("Неизвестный параметр state: " + stateParam));
+        List<BookingResponseDto> bookings = bookingService.getAllUserBookings(userId, state);
         return ResponseEntity.ok(bookings);
     }
 }

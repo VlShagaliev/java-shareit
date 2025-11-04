@@ -1,11 +1,13 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.NoRightsException;
@@ -17,7 +19,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -66,48 +67,48 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getOwnerBookings(Long userId, String stateParam) {
+    public List<BookingResponseDto> getOwnerBookings(Long userId, BookingState stateParam) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
-        List<Booking> bookings = bookingRepository.findAll().stream()
+        Sort newestFirst = Sort.by(Sort.Direction.DESC, "start");
+        List<Booking> bookings = bookingRepository.findAll(newestFirst).stream()
                 .filter(booking -> booking.getItem().getOwner().getId().equals(userId))
                 .toList();
-        bookings.sort(Comparator.comparing(Booking::getStart).reversed());
         return filteredByStateParam(bookings, stateParam);
     }
 
     @Override
-    public List<BookingResponseDto> getAllUserBookings(Long userId, String stateParam) {
-        List<Booking> bookings = bookingRepository.findAllByBookerId(userId).stream()
+    public List<BookingResponseDto> getAllUserBookings(Long userId, BookingState stateParam) {
+        Sort newestFirst = Sort.by(Sort.Direction.DESC, "start");
+        List<Booking> bookings = bookingRepository.findAllByBookerId(userId, newestFirst).stream()
                 .toList();
         return filteredByStateParam(bookings, stateParam);
     }
 
-    private List<BookingResponseDto> filteredByStateParam(List<Booking> bookings, String stateParam) {
+    private List<BookingResponseDto> filteredByStateParam(List<Booking> bookings, BookingState stateParam) {
         LocalDateTime now = LocalDateTime.now();
         return switch (stateParam) {
-            case "CURRENT" -> bookings.stream()
+            case CURRENT -> bookings.stream()
                     .filter(booking -> booking.getStart().isBefore(now) && booking.getEnd().isAfter(now))
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
-            case "PAST" -> bookings.stream()
+            case PAST -> bookings.stream()
                     .filter(booking -> booking.getEnd().isBefore(now))
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
-            case "FUTURE" -> bookings.stream()
+            case FUTURE -> bookings.stream()
                     .filter(booking -> booking.getStart().isAfter(now))
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
-            case "WAITING" -> bookings.stream()
+            case WAITING -> bookings.stream()
                     .filter(booking -> booking.getStatus().equals(Status.WAITING) && booking.getStart().isAfter(now))
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
-            case "REJECTED" -> bookings.stream()
+            case REJECTED -> bookings.stream()
                     .filter(booking -> booking.getStatus().equals(Status.REJECTED))
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
-            default -> bookings.stream()
+            case ALL -> bookings.stream()
                     .map(BookingMapper::toBookingResponseDto)
                     .toList();
         };
