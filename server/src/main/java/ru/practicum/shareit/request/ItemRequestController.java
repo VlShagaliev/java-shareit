@@ -35,4 +35,10 @@ public class ItemRequestController {
         ItemRequestDto itemRequestDto = itemRequestService.getItemRequestByItemRequestId(itemRequestId);
         return ResponseEntity.ok(itemRequestDto);
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ItemRequestDto>> getItemRequestsByOtherUsers(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        List<ItemRequestDto> itemRequestDtoList = itemRequestService.getItemRequestsByOtherUsers(userId);
+        return ResponseEntity.ok(itemRequestDtoList);
+    }
 }
