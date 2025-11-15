@@ -45,8 +45,8 @@ class BookingControllerTest {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(2);
 
-        userDto = new UserDto(1L, "Igor Plastinin", "plastinin-i@ya.ru");
-        itemDto = new ItemDto("Drill", "Impact drill", true, userDto.getId(),
+        userDto = new UserDto(1L, "Владислав Шагалиев", "vl.shagaliev@ya.ru");
+        itemDto = new ItemDto("Перфоратор", "Ударный перфоратор", true, userDto.getId(),
                 1L);
 
         bookingDto = new BookItemRequestDto(1L, start, end);

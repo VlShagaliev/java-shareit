@@ -40,7 +40,7 @@ class ItemRequestControllerTest {
     @BeforeEach
     void setUp() {
         userDto = new UserDto(1L, "Владислав Шагалиев", "vl.shagaliev@ya.ru");
-        itemRequestDto = new ItemRequestDto("I really need a hammer drill!");
+        itemRequestDto = new ItemRequestDto("Нужен перфоратор на пару дней.");
     }
 
     @Test
